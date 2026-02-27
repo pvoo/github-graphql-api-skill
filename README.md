@@ -6,9 +6,7 @@
 ![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)
 ![gh CLI](https://img.shields.io/badge/Requires-gh%20CLI-black.svg)
 
-GitHub's GraphQL API is incredibly powerful for searching and discovering things on GitHub — way beyond what REST gives you. A single query can search repos by language, stars, and topics, pull contributor counts, check recent releases, and get issue stats all at once.
-
-I built this because I use it daily with my AI agents to find relevant repositories, open source projects, SDKs, MCP servers, and other agent skills. Instead of manually browsing GitHub, I just ask my agent and it uses these scripts to find exactly what I need.
+GitHub's GraphQL API is powerful for searching and discovering things on GitHub. A single query can search repos by language, stars, and topics, pull contributor counts, check recent releases, and get issue stats all at once.
 
 ## Install
 
