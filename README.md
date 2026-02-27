@@ -1,44 +1,75 @@
 # github-graphql
 
-> Shell scripts for querying GitHub's GraphQL API v4 via the `gh` CLI.
+> Drop-in AI agent skill for querying GitHub's GraphQL API v4.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)
 ![gh CLI](https://img.shields.io/badge/Requires-gh%20CLI-black.svg)
 
-Search repos, inspect repositories, look up users/orgs, search issues/PRs, run arbitrary GraphQL queries, and monitor rate limits — all from the command line with human-readable and JSON output.
+Give your AI coding agent the ability to search repos, inspect projects, look up users/orgs, search issues/PRs, run arbitrary GraphQL queries, and check rate limits — with human-readable and JSON output.
 
-## Prerequisites
+## What is this?
+
+A **skill** — a set of shell scripts + a `SKILL.md` that any AI coding agent can read and use. Your agent reads `SKILL.md`, understands what scripts are available, and calls them to interact with GitHub's GraphQL API.
+
+Works with: **Claude Code** · **Codex** · **Gemini CLI** · **Cursor** · **Windsurf** · **Cline** · **Roo Code** · any agent that reads skill/instruction files.
+
+## Install
+
+### Ask your AI agent
+
+Just tell your agent:
+
+> Add the GitHub GraphQL skill from https://github.com/pvoo/github-graphql as a submodule in my skills directory
+
+Or be more specific:
+
+> Clone https://github.com/pvoo/github-graphql into .claude/skills/github-graphql and read its SKILL.md
+
+### Manual install
+
+**As a git submodule (recommended):**
+```bash
+# Claude Code
+git submodule add https://github.com/pvoo/github-graphql .claude/skills/github-graphql
+
+# Codex / generic agent
+git submodule add https://github.com/pvoo/github-graphql skills/github-graphql
+
+# OpenClaw
+git submodule add https://github.com/pvoo/github-graphql .agent/skills/github-graphql
+```
+
+**As a simple clone:**
+```bash
+git clone https://github.com/pvoo/github-graphql .claude/skills/github-graphql
+```
+
+**Copy into existing skills directory:**
+```bash
+git clone https://github.com/pvoo/github-graphql /tmp/github-graphql
+cp -r /tmp/github-graphql/{SKILL.md,scripts,references} your-project/skills/github-graphql/
+```
+
+### Prerequisites
 
 - **[gh CLI](https://cli.github.com/)** — installed and authenticated (`gh auth login`)
 - **[jq](https://jqlang.github.io/jq/)** — JSON processor
 - **Bash 4+**
 
-## Install
+## How it works
 
-```bash
-git clone https://github.com/pvoo/github-graphql.git
-cd github-graphql
-
-# Option A: Add to PATH
-export PATH="$PWD/scripts:$PATH"
-
-# Option B: Run directly
-./scripts/search_repos.sh "your query"
+```
+You: "Find popular Python ML repos with 1000+ stars"
+        ↓
+Agent reads SKILL.md → picks search_repos.sh
+        ↓
+Agent runs: scripts/search_repos.sh "machine learning" --language python --stars ">1000" --json
+        ↓
+Agent gets structured JSON → formats answer for you
 ```
 
-## Quick Start
-
-```bash
-# Search for popular TypeScript GraphQL libraries
-./scripts/search_repos.sh "graphql client" --language typescript --stars ">100"
-
-# Get detailed info about a repo
-./scripts/repo_info.sh cli/cli
-
-# Look up a user profile
-./scripts/user_info.sh torvalds --json
-```
+The agent decides which script to call based on your request. `SKILL.md` tells it what's available and how to use each script.
 
 ## Scripts
 
@@ -54,32 +85,46 @@ export PATH="$PWD/scripts:$PATH"
 
 All scripts support `--help` and `--json` flags.
 
-## Output Examples
+## Examples
 
-**Human-readable** (`search_repos.sh "neovim" --limit 2`):
+```bash
+# Search for MCP servers with 50+ stars
+scripts/search_repos.sh "mcp server" --language typescript --stars ">50"
 
+# Get full details on a repo
+scripts/repo_info.sh microsoft/vscode
+
+# Look up an organization
+scripts/user_info.sh github
+
+# Search open issues with a label
+scripts/search_issues.sh "memory leak" --repo vercel/next.js --type issue --state open
+
+# Run a custom GraphQL query
+scripts/graphql.sh -q '{ viewer { login repositories(first: 5) { nodes { name stargazerCount } } } }'
 ```
- neovim/neovim ★ 84,521
-   Vim-fork focused on extensibility and usability
-   Language: C  Topics: vim, neovim, editor
 
- nvim-lua/kickstart.nvim ★ 21,340
-   A launch point for your Neovim configuration
-   Language: Lua  Topics: neovim, lua
+**Human-readable output:**
+```
+⭐ 47123 | upstash/context7 [TypeScript]
+         Context7 MCP Server -- Up-to-date code documentation for LLMs
+         Topics: llm, mcp, mcp-server
+⭐ 27811 | microsoft/playwright-mcp [TypeScript]
+         Playwright MCP server
+         Topics: mcp, playwright
 ```
 
-**JSON** (`repo_info.sh cli/cli --json`):
-
+**JSON output** (with `--json`):
 ```json
-{
-  "name": "cli",
-  "owner": "cli",
-  "stars": 38542,
-  "forks": 6021,
-  "language": "Go",
-  "license": "MIT",
-  "description": "GitHub's official command line tool"
-}
+[
+  {
+    "nameWithOwner": "upstash/context7",
+    "description": "Context7 MCP Server",
+    "stargazerCount": 47123,
+    "primaryLanguage": "TypeScript",
+    "url": "https://github.com/upstash/context7"
+  }
+]
 ```
 
 ## Environment Variables
@@ -88,6 +133,16 @@ All scripts support `--help` and `--json` flags.
 |----------|---------|
 | `GH_TOKEN` | Alternative to `gh auth login` |
 | `GH_HOST` | GitHub Enterprise host |
+
+## Standalone use
+
+You don't need an AI agent — all scripts work directly from the terminal:
+
+```bash
+git clone https://github.com/pvoo/github-graphql.git
+cd github-graphql
+./scripts/search_repos.sh "your query"
+```
 
 ## Contributing
 
