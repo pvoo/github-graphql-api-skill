@@ -1,54 +1,35 @@
-# github-graphql
+# github-graphql-api-skill
 
-> Drop-in AI agent skill for querying GitHub's GraphQL API v4.
+> Drop-in skill for AI agents to query GitHub's GraphQL API.
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Shell](https://img.shields.io/badge/Shell-Bash-green.svg)
 ![gh CLI](https://img.shields.io/badge/Requires-gh%20CLI-black.svg)
 
-Give your AI coding agent the ability to search repos, inspect projects, look up users/orgs, search issues/PRs, run arbitrary GraphQL queries, and check rate limits — with human-readable and JSON output.
+GitHub's GraphQL API is incredibly powerful for searching and discovering things on GitHub — way beyond what REST gives you. A single query can search repos by language, stars, and topics, pull contributor counts, check recent releases, and get issue stats all at once.
 
-## What is this?
-
-A **skill** — a set of shell scripts + a `SKILL.md` that any AI coding agent can read and use. Your agent reads `SKILL.md`, understands what scripts are available, and calls them to interact with GitHub's GraphQL API.
-
-Works with: **Claude Code** · **Codex** · **Gemini CLI** · **Cursor** · **Windsurf** · **Cline** · **Roo Code** · any agent that reads skill/instruction files.
+I built this because I use it daily with my AI agents to find relevant repositories, open source projects, SDKs, MCP servers, and other agent skills. Instead of manually browsing GitHub, I just ask my agent and it uses these scripts to find exactly what I need.
 
 ## Install
 
-### Ask your AI agent
+### Tell your AI agent
 
-Just tell your agent:
+Just say something like:
 
-> Add the GitHub GraphQL skill from https://github.com/pvoo/github-graphql as a submodule in my skills directory
+> Add the GitHub GraphQL skill from https://github.com/pvoo/github-graphql-api-skill as a submodule in my skills directory
 
-Or be more specific:
+### Manual
 
-> Clone https://github.com/pvoo/github-graphql into .claude/skills/github-graphql and read its SKILL.md
-
-### Manual install
-
-**As a git submodule (recommended):**
+**Git submodule (recommended):**
 ```bash
-# Claude Code
-git submodule add https://github.com/pvoo/github-graphql .claude/skills/github-graphql
-
-# Codex / generic agent
-git submodule add https://github.com/pvoo/github-graphql skills/github-graphql
-
-# OpenClaw
-git submodule add https://github.com/pvoo/github-graphql .agent/skills/github-graphql
+# Pick wherever your agent reads skills from
+git submodule add https://github.com/pvoo/github-graphql-api-skill .claude/skills/github-graphql
+git submodule add https://github.com/pvoo/github-graphql-api-skill skills/github-graphql
 ```
 
-**As a simple clone:**
+**Or just clone it:**
 ```bash
-git clone https://github.com/pvoo/github-graphql .claude/skills/github-graphql
-```
-
-**Copy into existing skills directory:**
-```bash
-git clone https://github.com/pvoo/github-graphql /tmp/github-graphql
-cp -r /tmp/github-graphql/{SKILL.md,scripts,references} your-project/skills/github-graphql/
+git clone https://github.com/pvoo/github-graphql-api-skill skills/github-graphql
 ```
 
 ### Prerequisites
@@ -59,52 +40,50 @@ cp -r /tmp/github-graphql/{SKILL.md,scripts,references} your-project/skills/gith
 
 ## How it works
 
+Your agent reads `SKILL.md`, sees what scripts are available, and calls them based on what you ask. You get human-readable output or structured JSON.
+
 ```
 You: "Find popular Python ML repos with 1000+ stars"
-        ↓
-Agent reads SKILL.md → picks search_repos.sh
-        ↓
-Agent runs: scripts/search_repos.sh "machine learning" --language python --stars ">1000" --json
-        ↓
-Agent gets structured JSON → formats answer for you
+  → Agent runs: scripts/search_repos.sh "machine learning" --language python --stars ">1000"
+  → You get results
 ```
 
-The agent decides which script to call based on your request. `SKILL.md` tells it what's available and how to use each script.
+Works with Claude Code, Codex, Gemini CLI, Cursor, Windsurf, and anything else that reads skill files. Also works standalone from the terminal.
 
 ## Scripts
 
-| Script | Description |
+| Script | What it does |
 |--------|-------------|
-| [`graphql.sh`](scripts/graphql.sh) | Run arbitrary GraphQL queries with variable support |
-| [`search_repos.sh`](scripts/search_repos.sh) | Search repositories by keyword, language, stars, topic |
-| [`repo_info.sh`](scripts/repo_info.sh) | Detailed repository info (stars, forks, languages, releases) |
-| [`user_info.sh`](scripts/user_info.sh) | User or organization profile lookup |
-| [`org_repos.sh`](scripts/org_repos.sh) | List organization repositories with sorting/filtering |
-| [`search_issues.sh`](scripts/search_issues.sh) | Search issues and PRs by query, state, labels |
-| [`rate_limit.sh`](scripts/rate_limit.sh) | Check GraphQL API rate limit status |
+| [`graphql.sh`](scripts/graphql.sh) | Run any GraphQL query (inline or from file) |
+| [`search_repos.sh`](scripts/search_repos.sh) | Search repos by keyword, language, stars, topic |
+| [`repo_info.sh`](scripts/repo_info.sh) | Full details on a repo (stars, forks, languages, releases) |
+| [`user_info.sh`](scripts/user_info.sh) | User or org profile |
+| [`org_repos.sh`](scripts/org_repos.sh) | List an org's repos with sorting/filtering |
+| [`search_issues.sh`](scripts/search_issues.sh) | Search issues and PRs |
+| [`rate_limit.sh`](scripts/rate_limit.sh) | Check your API rate limit |
 
-All scripts support `--help` and `--json` flags.
+All scripts support `--help` and `--json`.
 
 ## Examples
 
 ```bash
-# Search for MCP servers with 50+ stars
+# Find MCP servers in TypeScript
 scripts/search_repos.sh "mcp server" --language typescript --stars ">50"
 
-# Get full details on a repo
+# What does this repo look like?
 scripts/repo_info.sh microsoft/vscode
 
-# Look up an organization
+# Who's behind this org?
 scripts/user_info.sh github
 
-# Search open issues with a label
+# Any open memory leak issues in Next.js?
 scripts/search_issues.sh "memory leak" --repo vercel/next.js --type issue --state open
 
-# Run a custom GraphQL query
+# Custom query — go wild
 scripts/graphql.sh -q '{ viewer { login repositories(first: 5) { nodes { name stargazerCount } } } }'
 ```
 
-**Human-readable output:**
+**Output:**
 ```
 ⭐ 47123 | upstash/context7 [TypeScript]
          Context7 MCP Server -- Up-to-date code documentation for LLMs
@@ -114,35 +93,14 @@ scripts/graphql.sh -q '{ viewer { login repositories(first: 5) { nodes { name st
          Topics: mcp, playwright
 ```
 
-**JSON output** (with `--json`):
-```json
-[
-  {
-    "nameWithOwner": "upstash/context7",
-    "description": "Context7 MCP Server",
-    "stargazerCount": 47123,
-    "primaryLanguage": "TypeScript",
-    "url": "https://github.com/upstash/context7"
-  }
-]
-```
+Add `--json` to any command for structured output your agent can parse.
 
 ## Environment Variables
 
 | Variable | Purpose |
 |----------|---------|
 | `GH_TOKEN` | Alternative to `gh auth login` |
-| `GH_HOST` | GitHub Enterprise host |
-
-## Standalone use
-
-You don't need an AI agent — all scripts work directly from the terminal:
-
-```bash
-git clone https://github.com/pvoo/github-graphql.git
-cd github-graphql
-./scripts/search_repos.sh "your query"
-```
+| `GH_HOST` | For GitHub Enterprise |
 
 ## Contributing
 
